@@ -1,0 +1,237 @@
+import { Button } from "std-widgets.slint";
+import { VerticalBox, LineEdit, ComboBox, Spinner } from "std-widgets.slint";
+
+
+component DetailedButton inherits Rectangle {
+    in-out property <string> text: "Buton";
+    in-out property <color> base-color: #3498db;
+    in-out property <length> font-size: 14px;
+
+    callback clicked;
+
+
+    animate background { duration: 150ms; }
+    animate border-color { duration: 150ms; }
+
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: touch.has-hover ? base-color.brighter(30%) : transparent;
+
+
+    background: touch.pressed ? base-color.darker(20%) :
+                (touch.has-hover ? base-color.darker(5%) : base-color);
+
+    Text {
+        text: root.text;
+        color: white;
+        font-size: root.font-size;
+        font-weight: 600;
+        width: parent.width;
+        height: parent.height;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component SettingsPage {
+    // User Input Properties
+    in-out property <string> user_name;
+    in-out property <string> user_email;
+    in-out property <string> user_ekey;
+    in-out property <string> user_gender;
+    in-out property <string> doc_email;
+    in-out property <int> user_age;
+
+    // User Output Properties
+    in-out property <string> line_name;
+    in-out property <string> line_email;
+    in-out property <string> line_apikey;
+    in-out property <string> line_gender;
+    in-out property <string> line_docemail;
+    in-out property <string> line_age;
+
+    callback back_button();
+    callback save_button();
+
+    width: 600px;
+    height: 600px;
+    Image {
+        source: @image-url("Img/bg.png");
+        width: 100%;
+        height: 100%;
+        image-fit: cover; // pencereyi tamamen kaplar
+    }
+
+    SettingsPage := Rectangle {
+        width: 350px;
+        height: 350px;
+        x: 125px;
+        y: 125px;
+
+
+        background: rgba(30, 41, 59, 0.9);
+        border-radius: 15px;
+        border-width: 1px;
+        border-color: #334155;
+
+        SettingsTitle := Text {
+            text: "Ayarlar";
+            color: #f8fafc;
+            font-size: 40px;
+            font-weight: 700;
+            x: 115px;
+            y: 0px;
+        }
+
+        // --- LineEdits Start ---
+
+        UserNameLineText := Text {
+            text: "İsim";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 27px;
+            y: 68px;
+        }
+
+        UserNameLine := LineEdit {
+            text: user_name;
+            width: 130px;
+            height: 30px;
+            x: 25px;
+            y: 90px;
+            placeholder-text: "Adınız";
+        }
+
+        EmailLineText := Text {
+            text: "E-Posta";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 27px;
+            y: 143px;
+        }
+
+        EmailLine := LineEdit {
+            text: user_email;
+            width: 130px;
+            height: 30px;
+            x: 25px;
+            y: 165px;
+            placeholder-text: "mail@ornek.com";
+        }
+
+        ApiLineText := Text {
+            text: "API Anahtarı";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 27px;
+            y: 218px;
+        }
+
+        ApiLine := LineEdit {
+            text: user_ekey;
+            width: 130px;
+            height: 30px;
+            x: 25px;
+            y: 240px;
+            placeholder-text: "Anahtar";
+            input-type: password;
+        }
+
+        DoctorEmailLineText := Text {
+            text: "Hekim E-Posta";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 170px;
+            y: 143px;
+        }
+
+        DoctorEmailLine := LineEdit {
+            text: doc_email;
+            width: 160px;
+            height: 30px;
+            x: 170px;
+            y: 165px;
+        }
+
+        // --- LineEdits End ---
+
+        // --- Other Components ---
+
+        GenderText := Text {
+            text: "Cinsiyet";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 170px;
+            y: 68px;
+        }
+
+        AgeText := Text {
+            text: "Yaş";
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            x: 270px;
+            y: 68px;
+        }
+
+        GenderList := ComboBox {
+            current-value: user_gender;
+            width: 80px;
+            height: 30px;
+            x: 170px;
+            y: 90px;
+            model: ["Erkek", "Kadın"];
+        }
+
+        AgeLine := LineEdit {
+            text: user_age;
+            input-type: number;
+            width: 60px;
+            height: 30px;
+            x: 270px;
+            y: 90px;
+        }
+
+        SaveButton := DetailedButton {
+            text: "Kaydet";
+            font-size: 18px;
+            border-radius: 6px;
+            width: 160px;
+            height: 35px;
+            base-color: #10b981;
+            x: 170px;
+            y: 235px;
+            clicked => {
+                line_name = UserNameLine.text;
+                line_email = EmailLine.text;
+                line_age = AgeLine.text;
+                line_apikey = ApiLine.text;
+                line_docemail = DoctorEmailLine.text;
+                line_gender = GenderList.current-value;
+                save_button();
+            }
+        }
+
+        BackButton := DetailedButton {
+            text: "Geri Dön";
+            font-size: 16px;
+            border-radius: 8px;
+            width: 150px;
+            height: 40px;
+            base-color: #475569;
+            x: 100px;
+            y: 300px;
+            clicked => { root.back_button(); }
+        }
+    }
+}

@@ -1,0 +1,344 @@
+import { Button } from "std-widgets.slint";
+import { SettingsPage } from "settings.slint";
+import { VerticalBox, AboutSlint } from "std-widgets.slint";
+import { AiPage } from "ai_window.slint";
+import "Fonts/Asimovian-Regular.ttf";
+
+
+component ModernButton inherits Rectangle {
+    in property <string> text;
+    in property <color> base-color: #3b82f6;
+    callback clicked;
+
+    height: 40px; 
+    border-radius: 8px;
+
+    background: touch.pressed ? base-color.darker(20%) : (touch.has-hover ? base-color.darker(10%) : base-color);
+    animate background { duration: 150ms; }
+
+    border-width: touch.pressed ? 2px : 0px;
+    border-color: #ffffff40; 
+
+    Text {
+        text: root.text;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        
+        width: 100%;
+        height: 100%;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component Popup inherits Rectangle {
+    in property <string> message: "İşlem tamamlandı.";
+    in property <string> type: "success"; // success, error, info
+    in-out property <bool> active: false;
+    
+    callback close-clicked;
+
+    width: 100%;
+    height: 100%;
+
+    visible: root.anim-scale > 0.01;
+
+
+    property <float> anim-scale: active ? 1.0 : 0.0;
+    property <color> type-color: type == "success" ? #10b981 : (type == "error" ? #ef4444 : #3b82f6);
+
+    animate anim-scale { 
+        duration: 300ms; 
+        easing: root.active ? ease-out-back : ease-in-quart;
+    }
+
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #0f172a;
+        opacity: root.active ? 0.7 : 0.0;
+        
+        animate opacity { 
+            duration: 250ms; 
+            easing: ease-in-out; 
+        }
+        
+        TouchArea { 
+            clicked => { root.close-clicked(); } 
+        }
+    }
+
+    Rectangle {
+
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+
+
+        width: 340px * root.anim-scale;
+        height: 220px * root.anim-scale;
+        
+
+        opacity: root.anim-scale; 
+
+        background: #1e293b;
+        border-radius: 16px;
+        
+
+        border-width: 1px;
+        border-color: #334155;
+
+        // İçerik Düzeni
+        VerticalLayout {
+            padding: 25px;
+            spacing: 15px;
+            alignment: space-between;
+
+
+            Rectangle {
+
+                height: 50px;
+                width: 50px;
+                border-radius: 25px;
+                background: root.type-color.with-alpha(0.15); 
+
+                x: (parent.width - self.width) / 2;
+
+                Text {
+                    text: root.type == "success" ? "OK" : (root.type == "error" ? "!" : "i");
+                    color: root.type-color;
+                    font-size: 28px;
+                    font-weight: 900;
+                    
+
+                    width: 100%;
+                    height: 100%;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+
+            VerticalLayout {
+                spacing: 8px;
+                Text {
+                    text: root.type == "success" ? "Başarılı!" : (root.type == "error" ? "Hata!" : "Bilgi");
+                    color: #f1f5f9;
+                    font-size: 18px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: root.message;
+                    color: #94a3b8;
+                    font-size: 14px;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+            }
+
+            ModernButton {
+                text: "Tamam";
+                base-color: root.type-color;
+                clicked => {
+                    root.close-clicked();
+                }
+            }
+        }
+    }
+}
+
+component DetailedButton inherits Rectangle {
+    in-out property <string> text: "Buton";
+    in-out property <color> base-color: #3498db;
+    in-out property <length> font-size: 14px;
+
+    callback clicked;
+
+    animate background { duration: 150ms; }
+    animate border-color { duration: 150ms; }
+
+    border-radius: 12px;
+    width: 150px;
+    height: 40px;
+
+
+    border-width: 1px;
+    border-color: touch.has-hover ? base-color.brighter(40%) : transparent;
+    background: touch.pressed ? base-color.darker(20%) :
+                (touch.has-hover ? base-color.darker(5%) : base-color);
+
+    Text {
+        text: root.text;
+        color: white;
+        font-size: root.font-size;
+        font-weight: 700;
+        width: parent.width;
+        height: parent.height;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component AppWindow inherits Window {
+
+    width: 600px;
+    height: 600px;
+    title: "MEDA";
+    icon: @image-url("");
+    background: #0f172a;
+
+    Image {
+        source: @image-url("Img/bg.png");
+        width: 100%;
+        height: 100%;
+        image-fit: cover; // pencereyi tamamen kaplar
+    }
+
+    // Active Page Property
+    in-out property <string> active_page : "home";
+
+    // User Input Properties
+    in-out property <string> username <=> SettingPage.user_name;
+    in-out property <string> useremail <=> SettingPage.user_email;
+    in-out property <string> userkey <=> SettingPage.user_ekey;
+    in-out property <string> usergender <=> SettingPage.user_gender;
+    in-out property <int> userage <=> SettingPage.user_age;
+    in-out property <string> docemail <=> SettingPage.doc_email;
+
+    // Properties For SaveFunc
+    in-out property <string> line_name <=> SettingPage.line_name;
+    in-out property <string> line_email <=> SettingPage.line_email;
+    in-out property <string> line_apikey <=> SettingPage.line_apikey;
+    in-out property <string> line_gender <=> SettingPage.line_gender;
+    in-out property <string> line_docemail <=> SettingPage.line_docemail;
+    in-out property <string> line_age <=> SettingPage.line_age;
+
+
+    // Ai Returns
+    in-out property <image> RPID <=> Aipage.RPID; // returned python image decoded
+
+    
+    // Popup Properties
+    in-out property <bool> popup_active: false;
+    in-out property <string> popup_type: "info";
+    in-out property <string> popup_msg: "";
+
+    callback settings_up();
+    callback start_up();
+    callback save_up();
+    callback quit();
+    callback close_ai();
+
+    HomePage := Rectangle {
+        visible: root.active_page == "home";
+
+        width: 350px;
+        height: 350px;
+        x: 125px;
+        y: 125px;
+
+
+        background: rgba(30, 41, 59, 0.9);
+        border-radius: 15px;
+        border-width: 1px;
+        border-color: #334155;
+
+
+
+
+        MainMeda := Text {
+            text: "MEDA";
+            color: #22d3ee;
+            font-size: 65px;
+            font-family: "Asimovian";
+            font-weight: 800;
+            x : 80px;
+            y: 5px;
+            opacity: 1;
+
+        }
+
+        SettingsButton := DetailedButton {
+            text: "Ayarlar";
+            font-size: 16px;
+            border-radius: 10px;
+            width: 150px;
+            height: 40px;
+            base-color: #64748b;
+            x: 100px;
+            y: 125px;
+            opacity: 1;
+            clicked => {
+                root.settings_up();
+            }
+        }
+
+        StartButton := DetailedButton {
+            text: "Başlat";
+            font-size: 16px;
+            border-radius: 10px;
+            width: 150px;
+            height: 40px;
+            base-color: #0ea5e9;
+            x: 100px;
+            y: 200px;
+            opacity: 1;
+            clicked => {
+                start_up();
+            }
+        }
+
+        VersionText := Text {
+            text: "v0.2.0";
+            font-size: 12px;
+            color: #64748b;
+            x: 150px;
+            y: 320px;
+            opacity: 1;
+        }
+    }
+
+    SettingPage := SettingsPage {
+        visible: root.active_page == "settings";
+        back_button => {
+            root.active_page = "home";
+        }
+        save_button => {
+            save_up();
+        }
+    }
+
+
+    Aipage := AiPage{
+        visible: root.active_page == "aipage";
+        back_button_ai => {
+            root.active_page = "home";
+            close_ai();
+        }
+    }
+
+    Popup {
+        width: parent.width;
+        height: parent.height;
+        active: root.popup_active;
+        type: root.popup_type;
+        message: root.popup_msg;
+
+        close-clicked => {
+            root.popup_active = false;
+        }        
+    }
+}

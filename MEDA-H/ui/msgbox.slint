@@ -1,0 +1,183 @@
+import { VerticalBox } from "std-widgets.slint";
+
+// --- 1. MODERN ELASTİK BUTON (Aynı Kalıyor) ---
+component ModernButton inherits Rectangle {
+    in property <string> text: "Tamam";
+    in property <color> base_color: #3b82f6;
+    callback clicked;
+
+    height: 40px;
+    background: transparent;
+    property <float> scale_factor: 1.0;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    visual_bg := Rectangle {
+        width: parent.width * root.scale_factor;
+        height: parent.height * root.scale_factor;
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        border-radius: 12px;
+        background: root.base_color;
+
+        animate background { duration: 200ms; }
+        animate width, height { duration: 300ms; easing: cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    }
+
+    Rectangle {
+        z: -1;
+        width: visual_bg.width;
+        height: visual_bg.height;
+        x: visual_bg.x;
+        y: visual_bg.y + 4px;
+        border-radius: 12px;
+        background: root.base_color;
+        opacity: 0.3;
+    }
+
+    states [
+        hover when ta.has-hover: {
+            root.scale_factor: 1.05;
+            visual_bg.background: root.base_color.brighter(0.2);
+        }
+        active when ta.pressed: {
+            root.scale_factor: 0.95;
+            visual_bg.background: root.base_color.darker(0.1);
+        }
+    ]
+
+    Text {
+        text: root.text;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14px;
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+    }
+}
+
+// --- 2. ANA PENCERE (İkonlar Çizim Olarak Değiştirildi) ---
+export component MsgBox inherits Window {
+    title: "Bildirim";
+    width: 360px;
+    height: 240px;
+    background: #121212;
+
+    in property <string> message_title: "İşlem Başarılı";
+    in property <string> message_text: "Kayıt işlemi sorunsuz tamamlandı.";
+    in property <string> type: "success";
+
+    callback close_clicked();
+
+    property <color> theme_color:
+        root.type == "success" ? #10b981 :
+        (root.type == "warning" ? #f59e0b : #ef4444);
+
+    Rectangle {
+        width: 100%; height: 4px; y: 0;
+        background: root.theme_color;
+    }
+
+    VerticalLayout {
+        padding: 24px;
+        spacing: 0px;
+        alignment: space-between;
+
+        // --- İKON ALANI ---
+        Rectangle {
+            height: 80px;
+
+            // Nefes Alan Daire (Glow)
+            Rectangle {
+                border-radius: 99px;
+                background: root.theme_color;
+                opacity: 0.2;
+                property <length> size: 60px + 8px * sin((animation-tick() / 10ms) * 1deg);
+                width: self.size;
+                height: self.size;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+            }
+
+            // Sabit İç Daire
+            Rectangle {
+                width: 50px; height: 50px;
+                border-radius: 25px;
+                background: #121212;
+                border-width: 2px;
+                border-color: root.theme_color;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+
+                // --- BURASI DEĞİŞTİ: TEXT YERİNE PATH KULLANDIK ---
+
+                // 1. Success İkonu (Tik İşareti)
+                Path {
+                    visible: root.type == "success";
+                    width: 24px; height: 24px;
+                    // SVG Komutu: Move, Line, Line (Basit bir tik)
+                    commands: "M 0 13 L 8 21 L 24 3";
+                    stroke: root.theme_color;
+                    stroke-width: 3px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                // 2. Error İkonu (Çarpı İşareti)
+                Path {
+                    visible: root.type == "error";
+                    width: 20px; height: 20px;
+                    // SVG Komutu: İki çizgi (X)
+                    commands: "M 0 0 L 20 20 M 20 0 L 0 20";
+                    stroke: root.theme_color;
+                    stroke-width: 3px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                // 3. Warning İkonu (Ünlem İşareti)
+                // Ünlem için Path + Rectangle (nokta) birleşimi veya tek path kullanılabilir.
+                // Burada basitçe tek path ile çiziyoruz.
+                Path {
+                    visible: root.type == "warning";
+                    width: 4px; height: 24px;
+                    // Dikey çizgi ve alt nokta
+                    commands: "M 2 0 L 2 16 M 2 20 L 2 22";
+                    stroke: root.theme_color;
+                    stroke-width: 3px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            Text {
+                text: root.message_title;
+                color: #ffffff;
+                font-size: 20px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+            Text {
+                text: root.message_text;
+                color: #a1a1aa;
+                font-size: 14px;
+                horizontal-alignment: center;
+                wrap: word-wrap;
+            }
+        }
+
+        Rectangle { height: 10px; }
+
+        ModernButton {
+            text: "Tamam";
+            base_color: root.theme_color;
+            clicked => { root.close_clicked(); }
+        }
+    }
+}

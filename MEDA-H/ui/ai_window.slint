@@ -1,0 +1,276 @@
+import { Button } from "std-widgets.slint";
+
+
+component ModernButton inherits Rectangle {
+    in property <string> text;
+    in property <color> base-color: #3b82f6;
+    callback clicked;
+
+    height: 40px; 
+    border-radius: 8px;
+
+    background: touch.pressed ? base-color.darker(20%) : (touch.has-hover ? base-color.darker(10%) : base-color);
+    animate background { duration: 150ms; }
+
+    border-width: touch.pressed ? 2px : 0px;
+    border-color: #ffffff40; 
+
+    Text {
+        text: root.text;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        
+        width: 100%;
+        height: 100%;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component Popup inherits Rectangle {
+    in property <string> message: "İşlem tamamlandı.";
+    in property <string> type: "success"; // success, error, info
+    in-out property <bool> active: false;
+    
+    callback close-clicked;
+
+    width: 100%;
+    height: 100%;
+
+    visible: root.anim-scale > 0.01;
+
+
+    property <float> anim-scale: active ? 1.0 : 0.0;
+    property <color> type-color: type == "success" ? #10b981 : (type == "error" ? #ef4444 : #3b82f6);
+
+    animate anim-scale { 
+        duration: 300ms; 
+        easing: root.active ? ease-out-back : ease-in-quart;
+    }
+
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #0f172a;
+        opacity: root.active ? 0.7 : 0.0;
+        
+        animate opacity { 
+            duration: 250ms; 
+            easing: ease-in-out; 
+        }
+        
+        TouchArea { 
+            clicked => { root.close-clicked(); } 
+        }
+    }
+
+    Rectangle {
+
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+
+
+        width: 340px * root.anim-scale;
+        height: 220px * root.anim-scale;
+        
+
+        opacity: root.anim-scale; 
+
+        background: #1e293b;
+        border-radius: 16px;
+        
+
+        border-width: 1px;
+        border-color: #334155;
+
+        // İçerik Düzeni
+        VerticalLayout {
+            padding: 25px;
+            spacing: 15px;
+            alignment: space-between;
+
+
+            Rectangle {
+
+                height: 50px;
+                width: 50px;
+                border-radius: 25px;
+                background: root.type-color.with-alpha(0.15); 
+
+                x: (parent.width - self.width) / 2;
+
+                Text {
+                    text: root.type == "success" ? "OK" : (root.type == "error" ? "!" : "i");
+                    color: root.type-color;
+                    font-size: 28px;
+                    font-weight: 900;
+                    
+
+                    width: 100%;
+                    height: 100%;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+
+            VerticalLayout {
+                spacing: 8px;
+                Text {
+                    text: root.type == "success" ? "Başarılı!" : (root.type == "error" ? "Hata!" : "Bilgi");
+                    color: #f1f5f9;
+                    font-size: 18px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: root.message;
+                    color: #94a3b8;
+                    font-size: 14px;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+            }
+
+            ModernButton {
+                text: "Tamam";
+                base-color: root.type-color;
+                clicked => {
+                    root.close-clicked();
+                }
+            }
+        }
+    }
+}
+
+
+component DetailedButton inherits Rectangle {
+    in-out property <string> text: "Buton";
+    in-out property <color> base-color: #3498db;
+    in-out property <length> font-size: 14px;
+
+    callback clicked;
+
+
+
+    animate background { duration: 150ms; }
+    animate border-color { duration: 150ms; }
+
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: touch.has-hover ? base-color.brighter(30%) : transparent;
+
+
+    background: touch.pressed ? base-color.darker(20%) :
+                (touch.has-hover ? base-color.darker(5%) : base-color);
+
+    Text {
+        text: root.text;
+        color: white;
+        font-size: root.font-size;
+        font-weight: 600;
+        width: parent.width;
+        height: parent.height;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+
+export component AiPage {
+
+    in-out property <bool> popup_active: false;
+    in-out property <string> popup_type: "info";
+    in-out property <string> popup_msg: "";
+
+
+    in-out property <image> RPID; // python image source
+    callback back_button_ai();
+
+    width: 600px;
+    height: 600px;
+
+    Image {
+        source: @image-url("Img/bg.png");
+        width: 100%;
+        height: 100%;
+        image-fit: cover;
+    }
+
+    Rectangle {
+        width: 500px;
+        height: 500px;
+        x : 50px;
+        y : 50px;
+        background: #1e293b;
+        border-radius: 15px;
+        border-width: 1px;
+        border-color: #334155;
+        clip: true;
+
+
+        Text {
+            text: "YZ Görünümü";
+            font-size: 20px;
+            font-weight: 700;
+            color: #94a3b8;
+            y: 10px;
+            x: 20px;
+        }
+
+        Text {
+            text: "YZ Başlatılıyor...";
+            font-size: 20px;
+
+
+        }
+
+        Image {
+            y: 50px;
+            width: 100%;
+            height: 300px;
+            source: root.RPID;
+            image-fit: contain;
+            image-rendering: smooth;
+        }
+        
+        BackButton := DetailedButton {
+            text: "Geri Dön";
+            font-size: 16px;
+            border-radius: 8px;
+            width: 150px;
+            height: 40px;
+            base-color: #475569;
+
+            y: 450px;
+            clicked => { root.back_button_ai(); }
+        }
+    }
+    Popup {
+        width: parent.width;
+        height: parent.height;
+        active: root.popup_active;
+        type: root.popup_type;
+        message: root.popup_msg;
+
+        close-clicked => {
+            root.popup_active = false;
+        }        
+
+
+    }
+
+}

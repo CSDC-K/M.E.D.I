@@ -1,0 +1,9 @@
+customtkinter
+CTkMessagebox
+CTkListbox
+tkextrafont
+pywinstyles
+hPyT
+pillow
+dateutils
+matplotlib
